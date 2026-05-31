@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusBites | Partner Dashboard</title>
+  <meta name="description" content="Manage your campus kitchen orders, track delivery boys, update menus, and view business analytics in real-time.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Toast Alert Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main Dashboard Layout -->
+  <div class="dashboard-layout" id="dashboardLayout" style="display: none;">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-brand">
+          <a href="index.html" class="brand" style="flex-direction: column; align-items: flex-start; gap: 0;">
+            <span class="brand-logo" style="font-size: 24px;">CampusBites</span>
+            <span class="brand-subtitle" style="font-size: 10px;">Partner Hub</span>
+          </a>
+        </div>
+        
+        <ul class="sidebar-menu">
+          <!-- Common -->
+          <li>
+            <a class="sidebar-link active" id="navActiveOrders" data-panel="panelActiveOrders">
+              📥 Active Orders
+            </a>
+          </li>
+          
+          <!-- Shopkeeper Only -->
+          <li class="role-shopkeeper-only">
+            <a class="sidebar-link" id="navMenuMgmt" data-panel="panelMenuMgmt">
+              🍔 Manage Menu
+            </a>
+          </li>
+          
+          <!-- Delivery Only -->
+          <li class="role-delivery-only">
+            <a class="sidebar-link" id="navDeliveries" data-panel="panelDelivery">
+              🛵 My Deliveries
+            </a>
+          </li>
+          
+          <!-- Admin Only -->
+          <li class="role-admin-only">
+            <a class="sidebar-link" id="navAdmin" data-panel="panelAdmin">
+              🛡️ System Control
+            </a>
+          </li>
+          <li class="role-admin-only">
+            <a class="sidebar-link" id="navAllOrders" data-panel="panelAllOrders">
+              📋 All Orders Log
+            </a>
+          </li>
+          
+          <!-- Shopkeeper & Admin -->
+          <li class="role-shop-admin">
+            <a class="sidebar-link" id="navAnalytics" data-panel="panelAnalytics">
+              📈 Analytics
+            </a>
+          </li>
+          
+          <!-- Common Config Settings -->
+          <li>
+            <a class="sidebar-link" id="navSettings" data-panel="panelSettings">
+              ⚙️ Firebase Configuration
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- User profile in sidebar footer -->
+      <div class="sidebar-user">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+          <div class="user-avatar" id="sidebarAvatar">?</div>
+          <div style="overflow: hidden;">
+            <h4 style="font-size: 14px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;" id="sidebarName">Username</h4>
+            <p style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase;" id="sidebarRole">Role</p>
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" id="signOutBtn" style="width: 100%; justify-content: center;">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel Area -->
+    <main class="main-content">
+      <!-- Top banner for notifications/status -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h1 id="panelTitle">Active Orders</h1>
+          <p style="color: var(--text-secondary); font-size: 13px;" id="panelSubtitle">Real-time order incoming stream</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="hero-badge" id="dashboardFirebaseBadge" style="margin: 0;">Mock Mode Active</span>
+          <button class="btn btn-secondary btn-sm" onclick="location.reload()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- General Statistics Grid (Changes depending on logged-in role) -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <h3 id="stat1Label">Today's Revenue</h3>
+            <p id="stat1Val">₹0</p>
+          </div>
+          <div class="stat-card-icon">💰</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <h3 id="stat2Label">Active Orders</h3>
+            <p id="stat2Val">0</p>
+          </div>
+          <div class="stat-card-icon">📦</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <h3 id="stat3Label">Completed Today</h3>
+            <p id="stat3Val">0</p>
+          </div>
+          <div class="stat-card-icon">✅</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-info">
+            <h3 id="stat4Label">Outlet Status</h3>
+            <p id="stat4Val">Open</p>
+          </div>
+          <div class="stat-card-icon">🏪</div>
+        </div>
+      </div>
+
+      <!-- PANEL 1: ACTIVE ORDERS -->
+      <div class="panel active" id="panelActiveOrders">
+        <div class="orders-grid" id="activeOrdersContainer">
+          <!-- Injected dynamically by script.js -->
+        </div>
+      </div>
+
+      <!-- PANEL 2: MENU MANAGEMENT (Shopkeepers Only) -->
+      <div class="panel" id="panelMenuMgmt">
+        <div class="menu-mgmt-actions">
+          <h2 style="font-size: 18px;">Outlet Menu Catalog</h2>
+          <button class="btn btn-primary btn-sm" id="addItemBtn">➕ Add Menu Item</button>
+        </div>
+        
+        <div class="item-list-grid" id="menuItemsContainer">
+          <!-- Injected dynamically by script.js -->
+        </div>
+      </div>
+
+      <!-- PANEL 3: DELIVERY MY WORKFLOW (Delivery Boys Only) -->
+      <div class="panel" id="panelDelivery">
+        <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 24px; min-height: 400px;">
+          <!-- Left: Assigned orders -->
+          <div>
+            <h3 style="font-size: 16px; margin-bottom: 16px;">Assigned Tasks</h3>
+            <div style="display: flex; flex-direction: column; gap: 16px;" id="deliveryOrdersContainer">
+              <!-- Dynamic orders list -->
+            </div>
+          </div>
+          
+          <!-- Right: GPS Live Location Simulator -->
+          <div style="background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: 16px; margin-bottom: 8px;">Delivery GPS Simulation</h3>
+              <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 16px;">If you have active deliveries, click the simulator steps below to update your location on the campus map in real-time.</p>
+              
+              <div class="tracking-map-container" style="height: 250px; margin-bottom: 20px;">
+                <canvas id="dashboardMapCanvas" style="height: 250px;"></canvas>
+              </div>
+            </div>
+            
+            <div style="background: var(--bg-tertiary); padding: 16px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border);">
+              <h4 style="font-size: 13px; margin-bottom: 10px;">Mock GPS Navigation Driver</h4>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px;" id="gpsSimActions">
+                <button class="btn btn-secondary btn-sm" id="gpsAtShop" disabled>Rider @ Outlet</button>
+                <button class="btn btn-secondary btn-sm" id="gpsTransit" disabled>Rider In Transit</button>
+                <button class="btn btn-secondary btn-sm" id="gpsNear" disabled>Rider Near Hostel</button>
+                <button class="btn btn-secondary btn-sm" id="gpsArrived" disabled>Rider Arrived</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 4: SYSTEM CONTROL (Admins Only) -->
+      <div class="panel" id="panelAdmin">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px;">
+          <!-- Shop management -->
+          <div class="admin-table-container" style="padding: 20px;">
+            <h3 style="margin-bottom: 16px; font-size: 16px;">Outlets Status Controls</h3>
+            <div id="adminShopsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Dynamic shops listings -->
+            </div>
+          </div>
+          <!-- Delivery Boy list -->
+          <div class="admin-table-container" style="padding: 20px;">
+            <h3 style="margin-bottom: 16px; font-size: 16px;">Registered Delivery Personnel</h3>
+            <div id="adminDeliveriesContainer" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Dynamic delivery list -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 5: ALL ORDERS LOG (Admins Only) -->
+      <div class="panel" id="panelAllOrders">
+        <div class="admin-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Time</th>
+                <th>Outlet</th>
+                <th>Student / Location</th>
+                <th>Items Ordered</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="allOrdersTableBody">
+              <!-- Injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL 6: ANALYTICS (Shopkeepers & Admins) -->
+      <div class="panel" id="panelAnalytics">
+        <div class="charts-row">
+          <!-- Left: Sales Chart -->
+          <div class="chart-card">
+            <h3 style="font-size: 16px; margin-bottom: 8px;">Order Sales Chart</h3>
+            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 20px;">Platform volume distribution by outlet</p>
+            <div class="chart-container" id="analyticsBarChart">
+              <!-- Custom Bar Chart items injected via script.js -->
+            </div>
+          </div>
+          
+          <!-- Right: Top selling summary -->
+          <div class="chart-card">
+            <h3 style="font-size: 16px; margin-bottom: 16px;">Popular Menu Items</h3>
+            <div class="pie-list" id="analyticsTopSelling">
+              <!-- Top products list -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANEL 7: CONFIG SETTINGS -->
+      <div class="panel" id="panelSettings">
+        <div style="background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--border-radius-md); padding: 32px; max-width: 550px; box-shadow: var(--glass-shadow);">
+          <h2 style="font-size: 20px; margin-bottom: 12px;">Firebase Integration Settings</h2>
+          <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px;">Configure database links or disconnect keys to revert back to Local Offline Mock mode.</p>
+          
+          <form id="dashboardConfigForm" onsubmit="return false;">
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="dashConfigApiKey">API Key</label>
+              <input type="text" id="dashConfigApiKey" class="form-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="dashConfigDatabaseURL">Database URL (Realtime DB)</label>
+              <input type="text" id="dashConfigDatabaseURL" class="form-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="dashConfigAuthDomain">Auth Domain</label>
+              <input type="text" id="dashConfigAuthDomain" class="form-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="dashConfigProjectId">Project ID</label>
+              <input type="text" id="dashConfigProjectId" class="form-input" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+              <label for="dashConfigAppId">App ID</label>
+              <input type="text" id="dashConfigAppId" class="form-input" required>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">Save & Connect</button>
+              <button type="button" class="btn btn-danger" id="dashClearConfigBtn" style="flex: 1; justify-content: center;">Disconnect Live Database</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- AUTHENTICATION REQUIRED PANEL (Shows when not authenticated, or when role is student) -->
+  <div class="modal-overlay open" id="dashboardLoginOverlay" style="display: flex; align-items: center; justify-content: center;">
+    <div class="modal-content" style="max-width: 480px; text-align: center; transform: scale(1);">
+      <div class="sidebar-brand" style="margin-bottom: 20px; display: inline-block;">
+        <div class="brand" style="flex-direction: column; align-items: center;">
+          <span class="brand-logo" style="font-size: 32px;">CampusBites</span>
+          <span class="brand-subtitle" style="font-size: 12px;">Merchant Portal Login</span>
+        </div>
+      </div>
+      
+      <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 24px;">Please authenticate with your vendor, delivery, or administrator account credentials to enter the workspace dashboard.</p>
+      
+      <form id="dashboardLoginForm" onsubmit="return false;" style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group">
+          <label for="dashEmail">Campus Email</label>
+          <input type="email" id="dashEmail" class="form-input" placeholder="e.g. owner@campusbites.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label for="dashPassword">Password</label>
+          <input type="password" id="dashPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Authenticate</button>
+      </form>
+      
+      <!-- QUICK LOGIN SELECTOR FOR EASY TESTING -->
+      <div style="margin-top: 24px; border-top: 1px dashed rgba(255, 255, 255, 0.1); padding-top: 20px;">
+        <h4 style="font-size: 12px; color: var(--accent-orange); margin-bottom: 12px; font-weight: 600;">⚡ QUICK ACCREDITATION FOR DEMO TESTING</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="btn btn-secondary btn-sm" style="font-size: 11px; justify-content: center;" id="quickNescafe">☕ Nescafe Owner</button>
+          <button class="btn btn-secondary btn-sm" style="font-size: 11px; justify-content: center;" id="quickPizza">🍕 Pizza Bar Owner</button>
+          <button class="btn btn-secondary btn-sm" style="font-size: 11px; justify-content: center;" id="quickRider">🛵 Raju (Delivery Boy)</button>
+          <button class="btn btn-secondary btn-sm" style="font-size: 11px; justify-content: center;" id="quickAdmin">🛡️ Campus Admin</button>
+        </div>
+      </div>
+      
+      <p style="margin-top: 20px; font-size: 12px; color: var(--text-muted);">
+        <a href="index.html" style="color: var(--text-secondary); text-decoration: none;">← Back to Student Storefront</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- ADD MENU ITEM MODAL -->
+  <div class="modal-overlay" id="addItemModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="menuModalTitle">Add Menu Item</h2>
+        <button class="modal-close" id="closeAddItemModal">×</button>
+      </div>
+      
+      <form id="menuItemForm" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="hidden" id="menuItemKey">
+        
+        <div class="form-group">
+          <label for="menuItemName">Item Name</label>
+          <input type="text" id="menuItemName" class="form-input" placeholder="e.g. Cheese Burger" required>
+        </div>
+        <div class="form-group">
+          <label for="menuItemPrice">Price (₹)</label>
+          <input type="number" id="menuItemPrice" class="form-input" placeholder="e.g. 120" required min="1">
+        </div>
+        <div class="form-group">
+          <label for="menuItemDesc">Description</label>
+          <input type="text" id="menuItemDesc" class="form-input" placeholder="e.g. Smashed cheese patty with home sauce" required>
+        </div>
+        <div class="form-group">
+          <label for="menuItemEmoji">Item Graphic (Emoji)</label>
+          <input type="text" id="menuItemEmoji" class="form-input" placeholder="e.g. 🍔, 🍕, 🍜" required value="🍔" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label>Food Classification</label>
+          <div class="payment-radio-group">
+            <div>
+              <input type="radio" id="menuVeg" name="menuClass" value="veg" checked>
+              <label for="menuVeg" class="payment-radio-label" style="padding: 8px;">🟢 Vegetarian</label>
+            </div>
+            <div>
+              <input type="radio" id="menuNonVeg" name="menuClass" value="nonveg">
+              <label for="menuNonVeg" class="payment-radio-label" style="padding: 8px;">🔴 Non-Vegetarian</label>
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="saveMenuItemBtn" style="width: 100%; justify-content: center; margin-top: 10px;">
+          Add to Catalog
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Link script.js -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>

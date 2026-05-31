@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusBites | College Food Delivery Platform</title>
+  <meta name="description" content="Order fresh meals and snacks from your favorite campus shops. Delivered hot to your hostel room.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Toast Alert Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-container">
+      <a href="index.html" class="brand" id="brandLink">
+        <span class="brand-logo">CampusBites</span>
+        <span class="brand-subtitle">Campus Delivery</span>
+      </a>
+      
+      <div class="nav-actions">
+        <!-- Dashboard shortcut -->
+        <a href="dashboard.html" class="btn btn-secondary btn-sm" id="dashboardBtn">Go to Dashboard</a>
+        
+        <!-- Cart Trigger -->
+        <button class="btn btn-primary btn-sm" id="cartTrigger">
+          🛒 Cart (<span id="cartCount">0</span>)
+        </button>
+
+        <!-- Profile / Auth Controls -->
+        <div id="authContainer">
+          <button class="btn btn-secondary btn-sm" id="loginBtn">Sign In</button>
+        </div>
+
+        <!-- Firebase Config Gear -->
+        <button class="btn btn-secondary btn-sm" id="configTrigger" title="Firebase Settings" style="padding: 10px;">⚙️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero container">
+    <div class="hero-banner">
+      <div class="hero-content">
+        <span class="hero-badge" id="firebaseModeBadge">Running in Local Mock Mode</span>
+        <h1>Hungry between lectures?<br>We deliver directly to your <span>Hostel Room</span>.</h1>
+        <p>No more long lines at the food court. Place orders from top campus spots and track your delivery boy in real-time.</p>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-val" id="statShops">5</span>
+            <span class="stat-lbl">Campus Outlets</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="statOrders">150+</span>
+            <span class="stat-lbl">Daily Deliveries</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="statTime">15m</span>
+            <span class="stat-lbl">Average ETA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Tracking Panel (Hidden by default, displayed when an active order is being tracked) -->
+  <section class="container panel-tracking" id="trackingContainer" style="display: none; margin-bottom: 40px;">
+    <div class="tracking-card">
+      <div class="tracking-header">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 6px;">Live Order Tracking</h2>
+          <div class="tracking-id">Order ID: <span id="trackOrderId">#12345</span></div>
+        </div>
+        <span class="tracking-status-badge badge-pending" id="trackStatusBadge">Pending</span>
+      </div>
+      
+      <div class="tracking-grid">
+        <!-- Left Side: Order Status Timeline -->
+        <div class="timeline" id="trackTimeline">
+          <div class="timeline-step" id="step-pending">
+            <h4>Order Placed</h4>
+            <p id="time-pending">Waiting for shop acceptance</p>
+          </div>
+          <div class="timeline-step" id="step-accepted">
+            <h4>Accepted</h4>
+            <p id="time-accepted">Shopkeeper accepted the order</p>
+          </div>
+          <div class="timeline-step" id="step-preparing">
+            <h4>Preparing</h4>
+            <p id="time-preparing">Your food is being freshly cooked</p>
+          </div>
+          <div class="timeline-step" id="step-delivery">
+            <h4>Out for Delivery</h4>
+            <p id="time-delivery">Rider is heading to your hostel</p>
+          </div>
+          <div class="timeline-step" id="step-delivered">
+            <h4>Delivered</h4>
+            <p id="time-delivered">Enjoy your hot meal!</p>
+          </div>
+        </div>
+        
+        <!-- Right Side: Map Canvas -->
+        <div class="tracking-map-wrapper">
+          <div class="tracking-map-container">
+            <canvas id="campusMapCanvas"></canvas>
+            <div class="map-overlay">
+              <p>Delivery Boy: <span id="mapDeliveryBoyName">Raju</span></p>
+              <p>ETA: <span id="mapETA">10 mins</span></p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 16px; background: var(--bg-tertiary); padding: 12px 16px; border-radius: var(--border-radius-sm); border: 1px solid var(--glass-border); font-size: 13px;">
+            <p><strong>Rider Message:</strong> <span id="riderMessage">Rider is at the shop picking up order.</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shops Selection -->
+  <main class="container">
+    <h2 class="section-title">Select Outlet</h2>
+    <div class="shop-selector" id="shopContainer">
+      <!-- Injected dynamically by script.js -->
+    </div>
+
+    <!-- Menu Items -->
+    <div class="menu-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 class="section-title" id="menuTitle">Menu Items</h2>
+        <div style="font-size: 14px; color: var(--text-secondary);" id="shopStatusMsg"></div>
+      </div>
+      <div class="menu-grid" id="menuContainer">
+        <!-- Injected dynamically by script.js -->
+      </div>
+    </div>
+    
+    <!-- Tracking search widget -->
+    <div style="background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--border-radius-md); padding: 24px; margin-bottom: 60px; text-align: center; box-shadow: var(--glass-shadow);">
+      <h3 style="margin-bottom: 12px; font-size: 18px;">Looking for an existing order?</h3>
+      <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">Enter your Order ID to pull up live tracking and order details.</p>
+      <div style="display: flex; max-width: 400px; margin: 0 auto; gap: 10px;">
+        <input type="text" class="form-input" id="searchTrackId" placeholder="e.g. id_171542" style="flex: 1;">
+        <button class="btn btn-accent" id="searchTrackBtn">Track Order</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3>Your Food Cart</h3>
+      <button class="close-btn" id="cartClose">×</button>
+    </div>
+    
+    <div class="cart-items-container" id="cartItemsList">
+      <!-- Injected dynamically -->
+    </div>
+    
+    <div class="cart-footer">
+      <div class="cart-totals">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <span id="cartSubtotal">₹0</span>
+        </div>
+        <div class="total-row">
+          <span>Delivery Fee</span>
+          <span id="cartDelivery">₹20</span>
+        </div>
+        <div class="total-row">
+          <span>Taxes (5%)</span>
+          <span id="cartTax">₹0</span>
+        </div>
+        <div class="total-row grand">
+          <span>Grand Total</span>
+          <span id="cartGrandTotal">₹0</span>
+        </div>
+      </div>
+      
+      <!-- Checkout Form -->
+      <form class="checkout-form" id="checkoutForm" onsubmit="return false;">
+        <div class="form-group">
+          <label for="checkoutName">Student Name</label>
+          <input type="text" id="checkoutName" class="form-input" placeholder="Your Full Name" required>
+        </div>
+        <div class="form-group">
+          <label for="checkoutHostel">Hostel Name</label>
+          <select id="checkoutHostel" class="form-input" required style="background: var(--bg-secondary); color: var(--text-primary);">
+            <option value="" disabled selected>Select Hostel</option>
+            <option value="Hostel A">Hostel A (Boys)</option>
+            <option value="Hostel B">Hostel B (Boys)</option>
+            <option value="Hostel C">Hostel C (Girls)</option>
+            <option value="Hostel D">Hostel D (Girls)</option>
+            <option value="PG Block 1">PG Block 1</option>
+            <option value="PG Block 2">PG Block 2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="checkoutRoom">Room Number</label>
+          <input type="text" id="checkoutRoom" class="form-input" placeholder="e.g. 302-B" required>
+        </div>
+        <div class="form-group">
+          <label>Payment Method</label>
+          <div class="payment-radio-group">
+            <div>
+              <input type="radio" id="payCOD" name="paymentMethod" value="COD" checked>
+              <label for="payCOD" class="payment-radio-label">💵 COD</label>
+            </div>
+            <div>
+              <input type="radio" id="payOnline" name="paymentMethod" value="Online">
+              <label for="payOnline" class="payment-radio-label">💳 Online</label>
+            </div>
+          </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" id="placeOrderBtn" style="width: 100%; justify-content: center; margin-top: 10px;">
+          Confirm & Place Order
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- AUTH MODALS -->
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Sign In to CampusBites</h2>
+        <button class="modal-close" id="closeLoginModal">×</button>
+      </div>
+      <form id="loginForm" onsubmit="return false;">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="loginEmail">Campus Email</label>
+          <input type="email" id="loginEmail" class="form-input" placeholder="username@campusbites.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Sign In</button>
+        <div class="modal-switch">
+          Don't have an account? <a href="#" id="switchToRegister">Register Here</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div class="modal-overlay" id="registerModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create Account</h2>
+        <button class="modal-close" id="closeRegisterModal">×</button>
+      </div>
+      <form id="registerForm" onsubmit="return false;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="registerName">Full Name</label>
+          <input type="text" id="registerName" class="form-input" placeholder="Your Name" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="registerEmail">Campus Email</label>
+          <input type="email" id="registerEmail" class="form-input" placeholder="username@campusbites.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="registerPassword">Password</label>
+          <input type="password" id="registerPassword" class="form-input" placeholder="At least 6 characters" required minlength="6">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="registerRole">Account Type</label>
+          <select id="registerRole" class="form-input" style="background: var(--bg-secondary); color: var(--text-primary);">
+            <option value="student">Student / Campus Buyer</option>
+            <option value="delivery">Delivery Boy</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Create Account</button>
+        <div class="modal-switch">
+          Already have an account? <a href="#" id="switchToLogin">Sign In</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase Setup Modal -->
+  <div class="modal-overlay" id="configModal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2>Firebase Live Setup</h2>
+        <button class="modal-close" id="closeConfigModal">×</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+        To connect to your live Firebase project, paste your Web App configuration JSON here. Clear it to revert back to local offline mock database.
+      </p>
+      <form id="configForm" onsubmit="return false;">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="configApiKey">API Key</label>
+          <input type="text" id="configApiKey" class="form-input" placeholder="AIzaSy..." required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="configDatabaseURL">Database URL (Realtime DB)</label>
+          <input type="text" id="configDatabaseURL" class="form-input" placeholder="https://your-app-default-rtdb.firebaseio.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="configAuthDomain">Auth Domain</label>
+          <input type="text" id="configAuthDomain" class="form-input" placeholder="your-app.firebaseapp.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="configProjectId">Project ID</label>
+          <input type="text" id="configProjectId" class="form-input" placeholder="your-app" required>
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="configAppId">App ID</label>
+          <input type="text" id="configAppId" class="form-input" placeholder="1:12345:web:abcd..." required>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">Save & Connect</button>
+          <button type="button" class="btn btn-danger" id="clearConfigBtn" style="flex: 1; justify-content: center;">Revert to Local Mock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- RAZORPAY SIMULATOR MODAL -->
+  <div class="modal-overlay" id="razorpayModal">
+    <div class="modal-content" style="max-width: 400px; padding: 24px;">
+      <div class="modal-header" style="margin-bottom: 16px;">
+        <div class="razorpay-logo">Razorpay <span>SECURE</span></div>
+        <button class="modal-close" id="closeRazorpayModal">×</button>
+      </div>
+      
+      <div class="razorpay-body" id="razorpayBody">
+        <div class="razorpay-amount-box">
+          <p>Paying CampusBites</p>
+          <h3 id="razorpayAmount">₹0.00</h3>
+        </div>
+        
+        <div class="form-group">
+          <label>Select Payment Method</label>
+          <select id="razorpayMethod" class="form-input" style="background: var(--bg-secondary); color: var(--text-primary);">
+            <option value="upi">UPI (GPay / PhonePe / Paytm)</option>
+            <option value="card">Visa / Mastercard / RuPay Credit & Debit Cards</option>
+            <option value="netbanking">Net Banking (SBI, HDFC, ICICI)</option>
+          </select>
+        </div>
+        
+        <div id="razorpayUpiInput" class="form-group">
+          <label for="razorpayVpa">Enter UPI ID</label>
+          <input type="text" id="razorpayVpa" class="form-input" placeholder="e.g. student@okaxis" value="student@okaxis">
+        </div>
+        
+        <div id="razorpayCardInput" class="form-group" style="display: none; gap: 10px;">
+          <div>
+            <label for="razorpayCardNum">Card Number</label>
+            <input type="text" id="razorpayCardNum" class="form-input" placeholder="4111 2222 3333 4444" value="4111222233334444">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <label for="razorpayCardExpiry">Expiry</label>
+              <input type="text" id="razorpayCardExpiry" class="form-input" placeholder="MM/YY" value="12/28">
+            </div>
+            <div>
+              <label for="razorpayCardCvv">CVV</label>
+              <input type="password" id="razorpayCardCvv" class="form-input" placeholder="***" value="123">
+            </div>
+          </div>
+        </div>
+        
+        <button class="btn btn-accent" id="razorpayPayBtn" style="width: 100%; justify-content: center; background: #0b4aeb; color: #fff; margin-top: 10px;">
+          Pay Securely
+        </button>
+      </div>
+      
+      <!-- Processing Loader -->
+      <div class="razorpay-loader" id="razorpayLoader" style="display: none;">
+        <div class="spinner"></div>
+        <p style="font-weight: 600;">Authorizing Payment...</p>
+        <p style="font-size: 11px; color: var(--text-secondary);">Do not refresh or close this modal</p>
+      </div>
+
+      <!-- Payment Success/Failure Notification inside modal -->
+      <div id="razorpayStatus" style="display: none; text-align: center; padding: 20px 0;">
+        <span style="font-size: 48px;">✅</span>
+        <h3 style="margin-top: 12px; margin-bottom: 6px;">Payment Successful!</h3>
+        <p style="font-size: 13px; color: var(--text-secondary);">Transaction ID: pay_CB_<span id="razorpayTxId">12345</span></p>
+      </div>
+    </div>
+  </div>
+
+  <footer style="margin-top: 80px; padding: 40px 0; border-top: 1px solid var(--glass-border); text-align: center; font-size: 13px; color: var(--text-secondary);">
+    <div class="container">
+      <p>&copy; 2026 CampusBites Inc. All rights reserved.</p>
+      <p style="margin-top: 8px; color: var(--text-muted);">Built for College Campus Food Court Delivery</p>
+    </div>
+  </footer>
+
+  <!-- Link script.js -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>
