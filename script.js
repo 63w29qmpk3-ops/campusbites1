@@ -862,7 +862,8 @@ function bindQuickLogins() {
   });
 
   // Standard Login Submit inside Dashboard
-  document.getElementById('dashboardLoginForm').addEventListener('submit', async () => {
+  document.getElementById('dashboardLoginForm').addEventListener('submit', async (e) => {
+    if (e) e.preventDefault();
     const email = document.getElementById('dashEmail').value.trim();
     const pass = document.getElementById('dashPassword').value;
     try {
