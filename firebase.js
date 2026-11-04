@@ -190,7 +190,13 @@ export function clearFirebaseConfig() {
 }
 
 // Initialization Flow
-const firebaseConfig = getFirebaseConfig();
+const firebaseConfig = {
+  apiKey: "AIzaSyDpvWl8i-MD8h-WaGugG5YXvI56ApV6zL4",
+  authDomain: "campusbites-75a95.firebaseapp.com",
+  databaseURL: "https://campusbites-75a95-default-rtdb.firebaseio.com",
+  projectId: "campusbites-75a95",
+  appId: "1:938973332285:web:104d704c8387d63d507b54"
+};
 
 if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL) {
   // REAL FIREBASE MODE
